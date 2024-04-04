@@ -262,6 +262,7 @@ function sendMessages(stateId: RoomId, userId: UserId) {
 
 function ctx(chance: Chance.Chance, time: number, stateId: RoomId): Context {
   return {
+    roomId: stateId,
     chance,
     time,
     sendEvent<EventType extends HathoraEventTypes>(

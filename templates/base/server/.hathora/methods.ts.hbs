@@ -1,5 +1,6 @@
 import { Options } from "on-change";
 import { Chance } from "chance";
+import { RoomId } from "@hathora/server-sdk";
 import { Response } from "../../api/base";
 import {
   UserId,
@@ -13,6 +14,7 @@ import {
 } from "../../api/types";
 
 export interface Context {
+  roomId: RoomId
   chance: ReturnType<typeof Chance>;
   time: number;
   sendEvent: <EventType extends HathoraEventTypes>(
