@@ -194,7 +194,7 @@ export async function loadState(stateId: RoomId) {
   const userId = reader.readString();
   const argsBuffer = reader.readBuffer(reader.readUVarint());
   const chance = Chance(seed.toString());
-  const impl = new ImplWrapper(ctxNoEvents(chance, time), argsBuffer);
+  const impl = new ImplWrapper(ctxNoEvents(chance, time, stateId), argsBuffer);
 
   for (let i = 1; i < rows.length; i++) {
     const { time, record } = rows[i];
@@ -203,13 +203,13 @@ export async function loadState(stateId: RoomId) {
     {{#if tick}}
     if (method === 0xff) {
       const timeDelta = reader.readUVarint();
-      await impl.onTick(ctxNoEvents(chance, time), timeDelta / 1000);
+      await impl.onTick(ctxNoEvents(chance, time, stateId), timeDelta / 1000);
       continue;
     }
     {{/if}}
     const userId = reader.readString();
     const argsBuffer = reader.readBuffer(reader.readUVarint());
-    await impl.getResult(userId, method, ctxNoEvents(chance, time), argsBuffer);
+    await impl.getResult(userId, method, ctxNoEvents(chance, time, stateId), argsBuffer);
   }
 
   return { impl, chance };
@@ -291,8 +291,8 @@ function ctx(chance: Chance.Chance, time: number, stateId: RoomId): Context {
   };
 }
 
-function ctxNoEvents(chance: Chance.Chance, time: number): Context {
-  return { chance, time, sendEvent() {}, broadcastEvent() {} };
+function ctxNoEvents(chance: Chance.Chance, time: number, stateId: RoomId): Context {
+  return { roomId: stateId, chance, time, sendEvent() {}, broadcastEvent() {} };
 }
 
 function addPendingMessage(stateId: RoomId, userId: UserId) {
