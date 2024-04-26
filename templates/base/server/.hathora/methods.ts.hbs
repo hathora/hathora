@@ -34,6 +34,8 @@ export interface Methods<T> {
   {{@key}}(state: T, userId: UserId, ctx: Context, request: {{makeRequestName @key}}): Response;
   {{/each}}
   getUserState(state: T, userId: UserId): UserState;
+  onUserJoin?(state: T, userId: UserId, ctx: Context): void;
+  onUserLeave?(state: T, userId: UserId, ctx: Context): void;
   {{#if tick}}
   onTick(state: T, ctx: Context, timeDelta: number): void;
   {{/if}}

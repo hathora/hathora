@@ -41,6 +41,18 @@ export class ImplWrapper {
     const impl = await getLatestImpl();
     return impl.getUserState(onChange.target(this.state), userId);
   }
+  public async _onUserJoin(userId: UserId, ctx: Context) {
+    const impl = await getLatestImpl();
+    if (impl.onUserJoin !== undefined) {
+      await impl.onUserJoin(this.state, userId, ctx);
+    }
+  }
+  public async _onUserLeave(userId: UserId, ctx: Context) {
+    const impl = await getLatestImpl();
+    if (impl.onUserLeave !== undefined) {
+      await impl.onUserLeave(this.state, userId, ctx);
+    }
+  }
   public changedAt(): number | undefined {
     const res = this._changedAt;
     this._changedAt = undefined;

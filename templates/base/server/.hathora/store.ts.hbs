@@ -103,14 +103,17 @@ const store: Application = {
       }
     }
     sendSnapshot(roomId, userId);
+    const { impl, chance } = rooms.get(roomId)!;
+    impl._onUserJoin(userId, ctx(chance, Date.now(), roomId));
   },
   async unsubscribeUser(roomId: RoomId, userId: UserId): Promise<void> {
     if (!rooms.has(roomId)) {
       return;
     }
-    const subscribers = rooms.get(roomId)!.subscriptions;
-    subscribers.delete(userId);
-    if (subscribers.size === 0) {
+    const { impl, chance, subscriptions } = rooms.get(roomId)!;
+    impl._onUserLeave(userId, ctx(chance, Date.now(), roomId));
+    subscriptions.delete(userId);
+    if (subscriptions.size === 0) {
       changedStates.delete(roomId);
       pendingMessages.delete(roomId);
     }
