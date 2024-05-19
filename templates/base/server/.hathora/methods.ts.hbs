@@ -1,7 +1,7 @@
 import { Options } from "on-change";
 import { Chance } from "chance";
 import { RoomId } from "@hathora/server-sdk";
-import { Response } from "../../api/base";
+import { Response, HathoraEventTypes, HathoraEventPayloads } from "../../api/base";
 import {
   UserId,
   {{userState}} as UserState,
@@ -9,8 +9,6 @@ import {
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}
-  HathoraEventTypes,
-  HathoraEventPayloads,
 } from "../../api/types";
 
 export interface Context {

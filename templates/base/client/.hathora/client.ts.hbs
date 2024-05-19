@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import getRandomValues from "get-random-values";
-import { Reader, Writer } from "bin-serde";
+import { Reader } from "bin-serde";
 import {
   HathoraClient as _HathoraClient,
   HathoraConnection as _HathoraConnection,
@@ -11,13 +11,11 @@ import {
   decodeStateSnapshot,
   decodeStateUpdate,
   {{userState}} as UserState,
-  IInitializeRequest,
   {{#each methods}}
   {{makeRequestName @key}},
   {{/each}}
-  HathoraEvents,
 } from "../../api/types";
-import { UserData, Response, Method } from "../../api/base";
+import { UserData, Response, Method, HathoraEvents } from "../../api/base";
 
 import { computePatch } from "./patch";
 import { ConnectionFailure, transformCoordinatorFailure } from "./failures";

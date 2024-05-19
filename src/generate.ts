@@ -7,6 +7,19 @@ import { load } from "js-yaml";
 import { compile } from "handlebars";
 import { copySync, existsSync, outputFileSync, readdirSync, readFileSync, statSync } from "fs-extra";
 import "./helpers";
+import {
+  Type,
+  StringType,
+  IntType,
+  ChildType,
+  ReferenceType,
+  UnionType,
+  EnumType,
+  ObjectType,
+  Modifier,
+  codegenTypescript,
+  BooleanType,
+} from "@hathora/delta-pack";
 
 const TypeArgs = z.union([z.string(), z.array(z.string()), z.record(z.string())]);
 const HathoraConfig = z
@@ -167,23 +180,63 @@ function getArgsInfo(
 }
 
 function enrichDoc(doc: z.infer<typeof HathoraConfig>, plugins: string[], appName: string) {
+  function capitalize(s: string) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
   doc.types["UserId"] = "string";
-  return {
-    ...doc,
-    types: Object.fromEntries(
-      Object.entries(doc.types).map(([key, val]) => {
-        const argsInfo = getArgsInfo(doc, plugins, val, false, key);
+  doc.types["IInitializeRequest"] = {};
+  Object.entries(doc.methods).forEach(([key, val]) => {
+    doc.types[`I${capitalize(key)}Request`] = val ?? {};
+  });
+  const getPrimitiveType = (val: string) => {
+    if (val === "string") {
+      return StringType();
+    } else if (val === "int") {
+      return IntType();
+    } else if (val === "float") {
+      return IntType();
+    } else if (val === "boolean") {
+      return BooleanType();
+    }
+    throw new Error(`Invalid primitive type ${val}`);
+  };
+  const getChildType = (val: string, modifier?: Modifier) => {
+    return ChildType(val in doc.types ? ReferenceType(val) : getPrimitiveType(val), modifier);
+  };
+  const types = Object.fromEntries<Type>(
+    Object.entries(doc.types).map(([key, val]) => {
+      if (typeof val === "string") {
+        return [key, getPrimitiveType(val)];
+      } else if (Array.isArray(val)) {
+        if (val.every((v) => v in doc.types)) {
+          return [key, UnionType(val.map((v) => ReferenceType(v)))];
+        } else {
+          return [key, EnumType(val)];
+        }
+      } else if (typeof val === "object") {
         return [
           key,
-          plugins.includes(key) ? { type: "plugin", typeString: key, alias: false, item: argsInfo } : argsInfo,
+          ObjectType(
+            Object.fromEntries(
+              Object.entries(val).map(([k, v]) => {
+                if (v.endsWith("?")) {
+                  return [k, getChildType(v.slice(0, -1), Modifier.OPTIONAL)];
+                } else if (v.endsWith("[]")) {
+                  return [k, getChildType(v.slice(0, -2), Modifier.ARRAY)];
+                } else {
+                  return [k, getChildType(v)];
+                }
+              })
+            )
+          ),
         ];
-      })
-    ),
-    methods: Object.fromEntries(
-      Object.entries(doc.methods).map(([key, val]) => {
-        return [key, getArgsInfo(doc, plugins, val === null ? {} : val, false)];
-      })
-    ),
+      }
+      throw new Error(`Invalid type ${val}`);
+    })
+  );
+  return {
+    ...doc,
+    deltaPack: codegenTypescript(types),
     initializeArgs: getArgsInfo(doc, plugins, doc.initializeArgs ?? {}, false),
     error: getArgsInfo(doc, plugins, doc.error, false),
     plugins,

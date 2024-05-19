@@ -12,15 +12,8 @@ import {
   Server,
 } from "@hathora/server-sdk";
 
-import { Message, NO_DIFF } from "../../api/base";
-import {
-  encodeStateSnapshot,
-  encodeStateUpdate,
-  {{userState}} as UserState,
-  encodeStateError,
-  HathoraEventTypes,
-  HathoraEventPayloads,
-} from "../../api/types";
+import { Message, NO_DIFF, HathoraEventTypes, HathoraEventPayloads } from "../../api/base";
+import { encodeStateSnapshot, encodeStateUpdate, encodeStateError, {{userState}} as UserState } from "../../api/types";
 import { ImplWrapper } from "./wrapper";
 import { computeDiff } from "./diff";
 import { Context } from "./methods";
@@ -115,7 +108,7 @@ const store: Application = {
       pendingMessages.delete(roomId);
     }
   },
-  async onMessage(roomId: RoomId, userId: UserId, data: Buffer): Promise<void> {
+  async onMessage(roomId: RoomId, userId: UserId, data: ArrayBuffer): Promise<void> {
     if (!rooms.has(roomId)) {
       return;
     }
@@ -131,7 +124,7 @@ const store: Application = {
       userId,
       method,
       ctx(chance, time, roomId),
-      argsBuffer
+      new Reader(argsBuffer)
     );
     if (subscriptions.has(userId)) {
       subscriptions
@@ -166,7 +159,7 @@ function createRoom(roomId: RoomId, userId: UserId) {
   // set to default in preparation for removing IInitializeRequest
   const data = Buffer.from("");
 
-  const impl = new ImplWrapper(ctx(chance, time, roomId), data);
+  const impl = new ImplWrapper(ctx(chance, time, roomId), new Reader(data));
   rooms.set(roomId, { impl, chance, subscriptions: new Map() });
   log.append(
     roomId,
@@ -194,7 +187,7 @@ export async function loadState(stateId: RoomId) {
   const userId = reader.readString();
   const argsBuffer = reader.readBuffer(reader.readUVarint());
   const chance = Chance(seed.toString());
-  const impl = new ImplWrapper(ctxNoEvents(chance, time, stateId), argsBuffer);
+  const impl = new ImplWrapper(ctxNoEvents(chance, time, stateId), new Reader(argsBuffer));
 
   for (let i = 1; i < rows.length; i++) {
     const { time, record } = rows[i];
@@ -209,7 +202,7 @@ export async function loadState(stateId: RoomId) {
     {{/if}}
     const userId = reader.readString();
     const argsBuffer = reader.readBuffer(reader.readUVarint());
-    await impl.getResult(userId, method, ctxNoEvents(chance, time, stateId), argsBuffer);
+    await impl.getResult(userId, method, ctxNoEvents(chance, time, stateId), new Reader(argsBuffer));
   }
 
   return { impl, chance };

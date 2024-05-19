@@ -1,4 +1,3 @@
-import axios from "axios";
 import * as T from "./types";
 
 export const NO_DIFF = Symbol("NODIFF");
@@ -16,6 +15,21 @@ export enum Method {
   {{/each}}
 }
 
+export enum HathoraEventTypes {
+  {{#each events}}
+  {{@key}},
+  {{/each}}
+}
+export type HathoraEventPayloads = {
+  {{#each events}}
+  [HathoraEventTypes.{{@key}}]: {{> renderTypeArg this}};
+  {{/each}}
+};
+
+export type HathoraEvents = {{#each events}}
+  | { type: HathoraEventTypes.{{@key}}; val: HathoraEventPayloads[HathoraEventTypes.{{@key}}] }
+{{/each}};
+
 export type OkResponse = { type: "ok" };
 export type ErrorResponse = { type: "error"; error: {{> renderTypeArg error}} };
 export type Response = OkResponse | ErrorResponse;
@@ -27,13 +41,13 @@ export const Response: { ok: () => OkResponse; error: (error: {{> renderTypeArg 
 export type ResponseMessage = { type: "response"; msgId: number; response: Response };
 export type EventMessage = {
   type: "event";
-  event: T.HathoraEventTypes;
-  data: T.HathoraEventPayloads[T.HathoraEventTypes];
+  event: HathoraEventTypes;
+  data: HathoraEventPayloads[HathoraEventTypes];
 };
 export type Message = ResponseMessage | EventMessage;
 export const Message: {
   response: (msgId: number, response: Response) => ResponseMessage;
-  event: (event: T.HathoraEventTypes, data: T.HathoraEventPayloads[T.HathoraEventTypes]) => EventMessage;
+  event: (event: HathoraEventTypes, data: HathoraEventPayloads[HathoraEventTypes]) => EventMessage;
 } = {
   response: (msgId, response) => ({ type: "response", msgId, response }),
   event: (event, data) => ({ type: "event", event, data }),
