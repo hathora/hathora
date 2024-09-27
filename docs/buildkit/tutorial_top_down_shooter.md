@@ -14,59 +14,20 @@ By the end of this tutorial, the game will look like this:
 
 ## Project structure and common files
 
-First things first, create a folder for your project. This can be done via a CLI by using the following command:
+To bootstrap our base project's structure, we'll be be leveraging a tool called [create-hathora-buildkit](https://www.npmjs.com/package/create-hathora-buildkit). To run this tool, navigate to the folder where you keep your various projects in your CLI and run the following command:
 
 ```bash
-mkdir topdown-shooter
+npm init hathora-buildkit
 ```
 
-Where "topdown-shooter" is the name of your project.
+This will prompt you for a valid project name, and automatically generate a basic project structure and install dependencies.
 
-Following that, we'll create three sub-folders, one called `common` (where we will start), one called `client`, and one called `server`. Do this by executing the following:
+After that completes, `cd` into your fresh project and create a new folder for common files via:
 
 ```bash
-cd topdown-shooter
+cd topdown-shooter # replace "topdown-shooter" with your project's name
 mkdir common
-mkdir client
-mkdir server
 ```
-
-After the folders are created, open the root project folder (topdown-shooter) in your IDE of choice (I'll be using VSCode, but feel free to use any editor you're comfortable with).
-
-Before we get started with any of the folders, we're going to ensure one very important file is in place. The `.env` file. This file lives in the root of your project, and contains sensitive credentials that you don't want to accidentally end up in a repository. To that end, we'll also create a `.gitignore` file, so that if you're using Git, your secret keys won't accidentally end up in a repository.
-
-From within your code editor, create both a `.env` and `.gitignore` file in the root of your project.
-
-In `.env`, we only need to add one thing: a fake `APP_SECRET` variable. When I say fake, I just mean something that is unique and not already in use on Hathora.
-
-Your `.env` should end up looking something like this:
-
-```sh
-APP_SECRET=thisissomefakemadeupsecretokay
-```
-
-After you've added that, even though it's a fake secret, we'll still add it to the `.gitignore` file so that if you choose to deploy your project on Hathora with a _real_ secret, it'll be safe.
-
-Your `.gitignore` should be as follows:
-
-```
-node_modules
-.env
-.DS_Store
-dist
-```
-
-It's highly recommended to avoid checking in your `node_modules` folders, and you shouldn't check in your `APP_SECRET` either. Everything else isn't mission-critical, but it's unnecessary to check in.
-
-Now, inside of the `common` folder, let's begin by creating a `package.json` file. Inside the file copy and paste the following:
-
-```json
-{
-  "type": "module"
-}
-```
-
-This enables us to utilize the `import` and `export` syntax on the modules we will be defining.
 
 Next, let's create a few files. Go ahead and add the following files, with their cooresponding source code:
 
@@ -236,34 +197,12 @@ This file contains another enum and several additional types that will again be 
 
 Next let's get started with setting up our game's server.
 
-Once you've completed this, open the root project folder in your code editor of choice (I'll be using VSCode for this). With the project folder open, create a new file within your `server` folder called `package.json`. Inside this file, copy and paste the following:
-
-```json
-{
-  "type": "module",
-  "scripts": {
-    "start": "npx ts-node-esm --experimental-specifier-resolution=node server.ts"
-  },
-  "dependencies": {
-    "@hathora/server-sdk": "^0.3.0",
-    "detect-collisions": "^6.4.2",
-    "dotenv": "^16.0.2"
-  },
-  "devDependencies": {
-    "@types/node": "^18.7.16",
-    "ts-node": "^10.9.1",
-    "typescript": "^4.8.3"
-  }
-}
-```
-
-Then head back into your terminal, and install all the dependencies with the following command:
+From within the root of your project's folder, run the following to add the single additional server dependency we'll be leveraging for this game ([detect-collisions](https://www.npmjs.com/package/detect-collisions)):
 
 ```bash
-npm install
+cd server
+npm install detect-collisions
 ```
-
-This will figure out the dependency tree from the `dependencies` and `devDependencies` objects specified in our `package.json` file. The file also marks the project as having the `module` type, so we'll later be able to use `import` and `export` statements in our code.
 
 Because we're using TypeScript for our project, we'll also want to specify a `tsconfig.json` file in our `server` folder to configure the language appropriately for our project:
 
@@ -284,11 +223,11 @@ Now with that out of the way, let's begin writing some code!
 
 ## Server code
 
-The main file that contains our server code will be called `server.ts`, and will live in the `server` folder.
+The main file that contains our server code is called `server.ts`, in the `server` folder.
 
 ### Imports and constant configuration
 
-Let's dive in and create the file in our IDE, then enter the following imports and constant value config:
+Let's dive in and create the file in our IDE, then enter the following imports and constant value config (replacing the boilerplate code that was in `server.ts` previously):
 
 ```ts
 import { register, Store, UserId, RoomId } from "@hathora/server-sdk";
@@ -601,81 +540,16 @@ After putting all of the above pieces together, you will have an operational gam
 
 Now we're going to look at setting up the `client` folder, such that it's able to serve your game client to the browser and eventually connect to your server!
 
-For serving our game, we're going to setup a build tool called Vite.
+For our topdown shooter project, we'll need to once again install some additional dependencies. For the client, these are: [hash.js](https://www.npmjs.com/package/hash.js/v/1.0.1), [interpolation-buffer](https://www.npmjs.com/package/interpolation-buffer), and [phaser](https://www.npmjs.com/package/phaser).
 
-To do this, create another `package.json` file, as before, but ensure this one lives inside the `client` folder.
-
-Enter the following into it:
-
-```json
-{
-  "type": "module",
-  "scripts": {
-    "start": "npx vite",
-    "build": "npx vite build"
-  },
-  "dependencies": {
-    "@hathora/client-sdk": "^0.0.6",
-    "hash.js": "^1.1.7",
-    "interpolation-buffer": "^1.2.5",
-    "phaser": "^3.55.2"
-  },
-  "devDependencies": {
-    "@types/node": "^18.6.3",
-    "typescript": "^4.7.4",
-    "vite": "^2.9.13"
-  }
-}
-```
-
-Then from inside your terminal, run the following to install all of our dependencies:
+Assuming you're still in the `server` folder, run the following to achieve this:
 
 ```bash
-cd client
-npm install
+cd ../client
+npm install hash.js interpolation-buffer phaser
 ```
 
-We're also using TypeScript on the client, so from within your code editor create a file called `tsconfig.json` and enter the following (we'll be working within the `client` folder from here on):
-
-```json
-{
-  "compilerOptions": {
-    "esModuleInterop": true,
-    "module": "esnext",
-    "strict": true,
-    "target": "esnext",
-    "moduleResolution": "node",
-    "isolatedModules": true
-  }
-}
-```
-
-After that's saved, create two more files, one called `vite.config.ts`, and another called `index.html`, and enter the following snippets into them, respectively:
-
-```ts
-import hash from "hash.js";
-import { defineConfig, loadEnv } from "vite";
-
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, "../", "");
-  const appSecret = process.env.APP_SECRET ?? env.APP_SECRET;
-
-  return {
-    build: { target: "esnext" },
-    publicDir: "src/assets",
-    server: { host: "0.0.0.0" },
-    clearScreen: false,
-    define: {
-      "process.env": {
-        APP_ID: hash.sha256().update(appSecret).digest("hex"),
-        COORDINATOR_HOST: process.env.COORDINATOR_HOST ?? env.COORDINATOR_HOST,
-      },
-    },
-  };
-});
-```
-
-And:
+After those install, edit the `index.html` file such that it looks as follows:
 
 ```html
 <!DOCTYPE html>
@@ -688,22 +562,14 @@ And:
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/app.ts"></script>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
 ```
 
-The first file, `vite.config.ts`, is a configuration file for Vite. It allows us to specify special build instructions to the tool such as the port number to run on, a build target, and more.
+This is a simple HTML file, however you'll notice it's referencing a file we haven't looked at yet: `src/main.ts`.
 
-The second file, is a simple HTML file, however you'll notice it's referencing a file we haven't made yet: `src/app.ts`.
-
-Let's rectify that now, by first creating a `src` folder inside our client, like so:
-
-```bash
-mkdir src
-```
-
-Back in our code editor, create a file in our new `src` folder called `app.ts`, and for now, simply write a `console.log` statement inside it. Like this:
+Back in our code editor, let's remove everything that was in `src/main.ts`, and for now, simply write a `console.log` statement inside it. Like this:
 
 ```ts
 import "console";
@@ -711,15 +577,16 @@ import "console";
 console.log("Client is running!");
 ```
 
-Next, from within the `client` folder, try running the following, then opening `http://localhost:3000` in your browser:
+Next, return to the root of your project and run the following, then open `http://localhost:5173` in your browser:
 
 ```bash
-npm run start
+cd ..
+npm run client
 ```
 
-If everything is hooked up properly, you should see the following message in the JavaScript console:
+The styling on the boilerplate page will be broken, however if everything is hooked up properly, you should see the following message in the JavaScript console:
 
-![A screenshot showing the JS console after configuration](https://user-images.githubusercontent.com/7004280/192632348-1df4a6ad-4d89-455f-b3be-17adef0a8134.png)
+![A screenshot showing the JS console after configuration](https://user-images.githubusercontent.com/7004280/213260347-5446279a-57e5-4604-a368-d3401ebab22e.png)
 
 From here, we will go through the clientside game code, which is responsible for rendering the game's visuals and sending player input to the server.
 
@@ -729,10 +596,10 @@ From here, we will go through the clientside game code, which is responsible for
 
 The first thing we're going to tackle, ironically, is not code.
 
-First, create a folder inside of `src` called: `assets`.
+First, create a folder inside of `client/src` called: `assets`.
 
 ```bash
-cd src
+cd client/src
 mkdir assets
 ```
 
@@ -1140,11 +1007,11 @@ function lerpBullet(from: Bullet, to: Bullet, pctElapsed: number): Bullet {
 }
 ```
 
-And that does it, with our game scene out of the way, the last step is to implement our entry point file (`app.ts`). This is by far the easiest thing we've done yet, so hang in there, we're almost done!
+And that does it, with our game scene out of the way, the last step is to implement our entry point file (`main.ts`). This is by far the easiest thing we've done yet, so hang in there, we're almost done!
 
-### app.ts
+### main.ts
 
-Previously in `app.ts`, I asked you to test your implementation by adding a console log and an import statement. You should now remove these and replace it with the following:
+Previously in `main.ts`, I asked you to test your implementation by adding a console log and an import statement. You should now remove these and replace it with the following:
 
 ```ts
 import { Game, AUTO } from "phaser";
@@ -1162,20 +1029,30 @@ new Game({
 });
 ```
 
-`app.ts` is the entrypoint for our client, meaning it will be run first and should be used to kick the whole thing off. We do this by importing our scenes, and passing them to a newly created `Phaser.Game` object (note we don't need to assign this to anything).
+`main.ts` is the entrypoint for our client, meaning it will be run first and should be used to kick the whole thing off. We do this by importing our scenes, and passing them to a newly created `Phaser.Game` object (note we don't need to assign this to anything).
 
 With this done, you're now ready to run the project.
 
-Open two terminals, in one navigate to the project's `server` folder. In the other navigate to the project's `client` folder.
+Navigate back to your project's root folder within your CLI, and open a duplicate CLI tab or window in the same folder.
 
-In both folders, run the following command:
+In the first, run:
 
 ```bash
-npm run start
+npm run server
 ```
 
-If there's no errors to debug, you can now open `https://localhost:3000` in your browser, start a game, and try it out!
+This will start up our game's server locally.
 
-If you want to test it with two browsers, make sure they have the same pathname in their URL. Doing this will enable you to test the multiplayer capabilites of what you've created!
+In the second CLI tab/window, run:
+
+```bash
+npm run client
+```
+
+This will boot our game's client locally.
+
+If there's no errors to debug, you can now open `https://localhost:5173` in your browser, start a game, and try it out!
+
+If you want to test it with two browsers, make sure they have the same pathname in their URL. You can achieve this by opening one browser tab, copying the full URL, then opening a second tab and pasting the URL into the navigation bar. Doing this will enable you to test the multiplayer capabilites of what you've created!
 
 **Congratulations, and enjoy using Hathora!** 😇
