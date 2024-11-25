@@ -27,7 +27,7 @@
     "shelljs": "0.8.5",
     "tar": "6.1.11",
     "ts-node": "10.7.0",
-    "update-notifier": "5.1.0",
+    "update-notifier": "6.0.2",
     "uuid": "8.3.2",
     "yargs": "17.5.1",
     "zod": "3.18.0"
@@ -39,7 +39,7 @@
     "@types/prompts": "2.0.14",
     "@types/shelljs": "0.8.11",
     "@types/tar": "6.1.2",
-    "@types/update-notifier": "5.1.0",
+    "@types/update-notifier": "6.0.1",
     "@types/uuid": "8.3.4",
     "@types/yargs": "17.0.12",
     "@typescript-eslint/eslint-plugin": "5.33.0",
