@@ -27,14 +27,17 @@ export class Impl implements Methods<InternalState> {
     {{/with}}
   }
   {{#each methods}}
+
   {{@key}}(state: InternalState, userId: UserId, ctx: Context, request: {{makeRequestName @key}}): Response {
     return Response.error("Not implemented");
   }
   {{/each}}
+
   getUserState(state: InternalState, userId: UserId): {{userState}} {
     return state;
   }
   {{#if tick}}
+
   onTick(state: InternalState, ctx: Context, timeDelta: number): void {}
   {{/if}}
 }
